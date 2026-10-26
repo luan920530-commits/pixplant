@@ -24,7 +24,36 @@ real** (esfera, plano, cubo, con desplazamiento), presets (piedra, madera,
 metal, tela…), muestras procedurales integradas y **exportación ZIP** con un
 **script de Blender** que crea el material con todos los nodos conectados.
 
-## 🚀 Cómo usarla
+## 💻 App nativa de escritorio (macOS Intel · Windows · Linux)
+
+La app también es una **aplicación nativa instalable** (Electron, un solo
+código para las tres plataformas):
+
+| Plataforma | Instalador |
+|---|---|
+| **Mac con Intel (x64)** | `.dmg` / `.zip` — *TexPlant-Studio-…-mac-intel* |
+| **Windows (x64)** | `.exe` instalador NSIS + portable |
+| **Linux (x64)** | `.AppImage` + `.deb` |
+
+**Descargarlos:** en GitHub → *Actions* → **Build native apps** (o al publicar
+un tag `v*`) se compila cada instalador en una máquina real de su sistema
+(`.github/workflows/build-native.yml`: `macos-13` = Intel, `windows-latest`,
+`ubuntu-latest`) y quedan como artefactos descargables.
+
+**Ejecutarla / compilarla en tu equipo:**
+
+```bash
+npm ci
+npm run desktop        # abre la app nativa sin empaquetar
+npm run dist:mac-intel # macOS Intel  (hacerlo en un Mac Intel)
+npm run dist:win       # Windows      (hacerlo en Windows)
+npm run dist:linux     # Linux        (.AppImage / .deb)
+```
+
+La versión nativa añade menú **Archivo → Abrir imagen… (Ctrl/Cmd+O)**
+y funciona sin servidor ni internet.
+
+## 🚀 Versión web / PWA
 
 Sin instalar nada (solo un navegador moderno):
 
@@ -61,6 +90,9 @@ js/processing.js   motor seamless/delight/height/normal/AO/roughness/metallic
 js/preview3d.js    vista 3D WebGL sin librerías
 js/export.js       PNG, ZIP sin dependencias y generador del script Blender
 js/app.js          interfaz, presets y muestras procedurales
+desktop/           app nativa Electron (main + preload seguro)
+package.json       electron-builder: mac Intel .dmg · Windows .exe · Linux .AppImage/.deb
+.github/workflows/build-native.yml   compila los 3 instaladores
 blender/material_builder.py   plantilla para usar dentro de Blender
 ```
 

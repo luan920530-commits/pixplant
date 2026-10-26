@@ -77,21 +77,66 @@ function setView(v) {
   $('view2d').hidden = v === '3d'; $('view3d').hidden = v !== '3d';
   if (v !== '3d') drawView();
 }
+/* Seleccionar un mapa NO regenera, NO reconstruye la tira y NO toca los
+   parámetros: solo cambia el resaltado y redibuja la vista actual. */
+function selectMap(key) {
+  if (!MAP_DEFS.some(([k]) => k === key)) return;
+  state.active = key;
+  document.querySelectorAll('.map-card').forEach(c => c.classList.toggle('active', c.dataset.key === key));
+  if (state.view === '3d') setView('2d'); else drawView();
+  saveSettings();
+}
 function buildStrip() {
-  const strip = $('mapStrip'); strip.innerHTML = '';
-  for (const [key, label, suffix, cs] of MAP_DEFS) {
-    const card = document.createElement('div'); card.className = 'map-card' + (state.active === key ? ' active' : '');
-    const thumb = document.createElement('canvas'); thumb.width = thumb.height = 128;
-    thumb.getContext('2d').drawImage(mapCanvases[key], 0, 0, 128, 128);
-    const span = document.createElement('span'); span.innerHTML = `<b>${label}</b><br><small>${cs}</small>`;
-    const btn = document.createElement('button'); btn.textContent = '⬇ PNG';
-    btn.onclick = async e => { e.stopPropagation(); download(await canvasBlob(mapCanvases[key]), `${materialName()}_${suffix}.png`); };
-    card.append(thumb, span, btn);
-    card.onclick = () => { state.active = key; if (state.view === '3d') setView('2d'); buildStrip(); drawView(); };
-    strip.appendChild(card);
+  const strip = $('mapStrip');
+  // Se crea una sola vez; en regeneraciones solo se actualizan las miniaturas
+  // (antes se recreaba todo el DOM y se perdía la selección/foco al hacer clic).
+  if (strip.children.length !== MAP_DEFS.length) {
+    strip.innerHTML = '';
+    for (const [key, label, suffix, cs] of MAP_DEFS) {
+      const card = document.createElement('div');
+      card.className = 'map-card'; card.dataset.key = key; card.title = `${label} — ${cs}`;
+      const thumb = document.createElement('canvas'); thumb.width = thumb.height = 128; thumb.dataset.thumb = key;
+      const span = document.createElement('span'); span.innerHTML = `<b>${label}</b><br><small>${cs}</small>`;
+      const btn = document.createElement('button'); btn.type = 'button'; btn.textContent = '⬇ PNG';
+      btn.addEventListener('click', async e => {
+        e.stopPropagation(); e.preventDefault();
+        download(await canvasBlob(mapCanvases[key]), `${materialName()}_${suffix}.png`);
+      });
+      card.append(thumb, span, btn);
+      card.addEventListener('click', e => { e.stopPropagation(); selectMap(key); });
+      strip.appendChild(card);
+    }
   }
+  for (const [key] of MAP_DEFS) {
+    const thumb = strip.querySelector(`canvas[data-thumb="${key}"]`);
+    if (thumb && mapCanvases[key].width) thumb.getContext('2d').drawImage(mapCanvases[key], 0, 0, 128, 128);
+  }
+  document.querySelectorAll('.map-card').forEach(c => c.classList.toggle('active', c.dataset.key === state.active));
 }
 const materialName = () => ($('matName').value.trim() || 'MiMaterial').replace(/[^\w\-]+/g, '_');
+
+/* ---------- persistencia: nada se restablece al regenerar/reabrir ---------- */
+function saveSettings() {
+  try {
+    const data = { active: state.active, view: state.view, fields: {} };
+    document.querySelectorAll('.controls input, .controls select').forEach(el => {
+      if (el.id) data.fields[el.id] = el.type === 'checkbox' ? el.checked : el.value;
+    });
+    localStorage.setItem('texplant-settings-v1', JSON.stringify(data));
+  } catch (_) { /* almacenamiento no disponible (modo privado, etc.) */ }
+}
+function restoreSettings() {
+  try {
+    const data = JSON.parse(localStorage.getItem('texplant-settings-v1') || 'null');
+    if (!data) return;
+    for (const [id, v] of Object.entries(data.fields || {})) {
+      const el = $(id); if (!el) continue;
+      if (el.type === 'checkbox') el.checked = !!v; else el.value = v;
+    }
+    if (MAP_DEFS.some(([k]) => k === data.active)) state.active = data.active;
+    syncVals();
+  } catch (_) { /* sin ajustes guardados */ }
+}
 
 /* ---------- carga de imagen ---------- */
 function setSource(canvas) {
@@ -108,6 +153,11 @@ function loadFile(file) {
   const img = new Image();
   img.onload = () => { const c = document.createElement('canvas'); c.width = img.naturalWidth; c.height = img.naturalHeight; c.getContext('2d').drawImage(img, 0, 0); setSource(c); URL.revokeObjectURL(img.src); };
   img.src = URL.createObjectURL(file);
+}
+function loadDataUrl(dataUrl) {
+  const img = new Image();
+  img.onload = () => { const c = document.createElement('canvas'); c.width = img.naturalWidth; c.height = img.naturalHeight; c.getContext('2d').drawImage(img, 0, 0); setSource(c); };
+  img.src = dataUrl;
 }
 
 /* ---------- muestras procedurales (para probar sin foto) ---------- */
@@ -151,7 +201,7 @@ function makeSample(kind) {
 
 /* ---------- eventos ---------- */
 function syncVals() { document.querySelectorAll('.val').forEach(b => { const el = $(b.dataset.for); if (el) b.textContent = el.value; }); }
-document.querySelectorAll('.controls input, .controls select').forEach(el => el.addEventListener('input', () => { syncVals(); regenerate(); }));
+document.querySelectorAll('.controls input, .controls select').forEach(el => el.addEventListener('input', () => { syncVals(); saveSettings(); regenerate(); }));
 $('workSize').addEventListener('change', () => { if (state.lastCanvas) setSource(state.lastCanvas); });
 $('fileInput').addEventListener('change', e => loadFile(e.target.files[0]));
 const _setSource = setSource; setSource = c => { state.lastCanvas = c; _setSource(c); };
@@ -181,6 +231,9 @@ $('btnZip').onclick = async () => {
 
 /* ---------- arranque ---------- */
 syncVals();
+restoreSettings();
 state.preview = new Preview3D($('view3d'));
+// Puente con la app nativa de escritorio (Electron): menú Archivo → Abrir imagen…
+if (window.texplantNative?.onOpenImage) window.texplantNative.onOpenImage(loadDataUrl);
 if ('serviceWorker' in navigator && location.protocol.startsWith('http')) navigator.serviceWorker.register('sw.js').catch(() => {});
 makeSample('ladrillo'); // arranca con algo visible

@@ -1,0 +1,59 @@
+{
+  "name": "texplant-studio",
+  "version": "1.1.0",
+  "description": "TexPlant Studio — generador de texturas PBR seamless para Blender (foto → BaseColor/Normal/Height/Bump/Displacement/Roughness/Metallic/AO)",
+  "license": "GPL-3.0-only",
+  "author": "TexPlant Studio",
+  "main": "desktop/main.js",
+  "scripts": {
+    "web": "python3 -m http.server 8000 --bind 0.0.0.0",
+    "desktop": "electron .",
+    "dist": "electron-builder --publish never",
+    "dist:mac-intel": "electron-builder --mac --x64 --publish never",
+    "dist:win": "electron-builder --win --x64 --publish never",
+    "dist:linux": "electron-builder --linux --x64 --publish never"
+  },
+  "devDependencies": {
+    "electron": "^31.7.7",
+    "electron-builder": "^24.13.3"
+  },
+  "build": {
+    "appId": "studio.texplant.app",
+    "productName": "TexPlant Studio",
+    "copyright": "Copyright © 2026 TexPlant Studio (GPL-3.0)",
+    "asar": true,
+    "files": [
+      "index.html",
+      "manifest.webmanifest",
+      "css/**/*",
+      "js/**/*",
+      "desktop/**/*",
+      "package.json"
+    ],
+    "directories": { "output": "dist", "buildResources": "build" },
+    "mac": {
+      "category": "public.app-category.graphics-design",
+      "target": [
+        { "target": "dmg", "arch": ["x64"] },
+        { "target": "zip", "arch": ["x64"] }
+      ],
+      "artifactName": "${productName}-${version}-mac-intel.${ext}"
+    },
+    "win": {
+      "target": [
+        { "target": "nsis", "arch": ["x64"] },
+        { "target": "portable", "arch": ["x64"] }
+      ],
+      "artifactName": "${productName}-${version}-windows.${ext}"
+    },
+    "nsis": { "oneClick": false, "allowToChangeInstallationDirectory": true, "shortcutName": "TexPlant Studio" },
+    "linux": {
+      "category": "Graphics",
+      "target": [
+        { "target": "AppImage", "arch": ["x64"] },
+        { "target": "deb", "arch": ["x64"] }
+      ],
+      "artifactName": "${productName}-${version}-linux.${ext}"
+    }
+  }
+}
