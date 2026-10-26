@@ -103,6 +103,10 @@
       <span class="spacer"></span>
       <label class="mini">Luz <input type="range" id="lightAngle" min="0" max="360" value="40"></label>
       <label class="mini">Desplaz. 3D <input type="range" id="disp3d" min="0" max="30" value="8"></label>
+      <label class="mini">Entorno <input type="range" id="envInt" min="0" max="200" value="90"></label>
+      <label class="mini">Exposición <input type="range" id="exposure" min="30" max="250" value="100"></label>
+      <label class="mini check-inline"><input type="checkbox" id="autoRotate" checked> Girar</label>
+      <button class="btn" id="btnResetView" title="Reiniciar cámara (o doble clic en la vista 3D)">⟲ Vista</button>
       <select id="shape3d"><option value="sphere">Esfera</option><option value="plane">Plano</option><option value="cube">Cubo</option></select>
     </div>
     <div class="canvas-wrap" id="dropZone">
@@ -110,6 +114,7 @@
       <canvas id="view3d" width="640" height="640" hidden></canvas>
       <div class="drop-hint" id="dropHint">Suelta aquí tu foto<br><small>PNG · JPG · WebP — todo se procesa en tu equipo, sin subir nada</small></div>
     </div>
+    <p class="hint">Vista 3D: arrastra para rotar · rueda para zoom · doble clic para reiniciar. La iluminación usa el modelo GGX con entorno de estudio, como el preview PBR de PixPlant.</p>
     <div class="map-strip" id="mapStrip"></div>
   </section>
 </main>

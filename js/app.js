@@ -213,6 +213,7 @@ document.querySelectorAll('[data-preset]').forEach(b => b.onclick = () => applyP
 document.querySelectorAll('.tab').forEach(t => t.onclick = () => setView(t.dataset.view));
 $('tiling').addEventListener('input', () => { if (state.view === 'tile') drawView(); });
 $('shape3d').addEventListener('change', e => state.preview?.buildGeometry(e.target.value));
+$('btnResetView').addEventListener('click', () => state.preview?.resetView());
 $('btnRegen').onclick = regenerate;
 const dz = $('dropZone');
 ['dragenter', 'dragover'].forEach(ev => dz.addEventListener(ev, e => { e.preventDefault(); dz.classList.add('dragover'); }));

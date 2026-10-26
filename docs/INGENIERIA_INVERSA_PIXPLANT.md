@@ -83,7 +83,7 @@ opuesto solo si el modo lo permite).
 | Opacity Extract (desde 5.0.44, corte 0.5 en preview) | Historial | Umbral de opacidad | `Opacity: Umbral/Suavidad/Invertir` → Alpha en Blender | ✅ nuevo |
 | Delight del Base Color | Ayuda §5 + 5.0.42 | Dividir por iluminación estimada | `delight` | ✅ |
 | Tiling Preview + Tiling Borders | Historial 5.0.46 | Ver repetición y bordes para cazar artefactos | Vista `Mosaico` N×N | ✅ |
-| Displacement teselación 256–1024, modelos, HDRI | Historial | Preview con desplazamiento real | Vista 3D WebGL (esfera/plano/cubo, desplazamiento por vértice) | 🟡 parcial (sin HDRI/modelos externos) |
+| Displacement teselación 256–1024, modelos, HDRI | Historial | Preview con desplazamiento real | Vista 3D WebGL GGX: esfera/plano/cubo, TBN por vértice, desplazamiento, entorno de estudio, ACES, zoom | 🟡 parcial (sin HDRI/modelos externos) |
 | 16 bits interno; Normal/Displacement a 16 bits al guardar | Ayuda §1 y §10 | Precisión para relieves suaves | PNG de 8 bits (Canvas) | ❌ pendiente (ver §5) |
 | Ajustes Adjust/Keying/Erode-Dilate/Paint/Offset/Transform | Historial | Edición por mapa tras extraer | Sliders globales por mapa | 🟡 parcial (sin edición por píxel) |
 | Export presets (Blender/Unreal/Unity/Corona…), empaquetado | Historial 5.0.48–49 | Nombres/canales según destino | ZIP + script Blender | 🟡 parcial (solo Blender) |
