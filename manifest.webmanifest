@@ -1,0 +1,9 @@
+{
+  "name": "TexPlant Studio — Generador PBR para Blender",
+  "short_name": "TexPlant",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#101410",
+  "theme_color": "#101410",
+  "icons": []
+}

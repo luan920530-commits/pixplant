@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#101410">
+<title>TexPlant Studio — Generador de texturas PBR para Blender</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌿</text></svg>">
+<link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+<header class="topbar">
+  <div class="brand"><span class="logo">🌿</span><div><h1>TexPlant <em>Studio</em></h1><p>Foto → Material PBR seamless → Blender</p></div></div>
+  <div class="top-actions">
+    <label class="btn primary" for="fileInput">📂 Cargar foto</label>
+    <input type="file" id="fileInput" accept="image/*" hidden>
+    <div class="menu-wrap"><button class="btn" id="sampleBtn">🎨 Muestra ▾</button>
+      <div class="menu" id="sampleMenu" hidden>
+        <button data-sample="ladrillo">🧱 ladrillo</button><button data-sample="piedra">🪨 Piedra</button>
+        <button data-sample="madera">🪵 Madera</button><button data-sample="metal">🔩 Metal oxidado</button>
+        <button data-sample="tela">🧶 Tela</button>
+      </div></div>
+    <button class="btn" id="btnBlender">🧊 Script Blender (.py)</button>
+    <button class="btn accent" id="btnZip">⬇ Exportar todo (.zip)</button>
+  </div>
+</header>
+
+<main class="layout">
+  <!-- ══════════ PANEL DE CONTROL ══════════ -->
+  <aside class="panel controls" id="controls">
+    <section class="card">
+      <h2>⚙️ Proyecto</h2>
+      <label class="field"><span>Nombre del material</span><input type="text" id="matName" value="MiMaterial"></label>
+      <label class="field"><span>Tamaño de trabajo</span>
+        <select id="workSize"><option value="256">256 px (rápido)</option><option value="512" selected>512 px</option><option value="1024">1024 px</option><option value="2048">2048 px (lento)</option></select></label>
+      <label class="field"><span>Repeticiones (mosaico)</span><input type="range" id="tiling" min="1" max="6" step="1" value="3"><b class="val" data-for="tiling"></b></label>
+      <div class="presets"><span>Presets:</span>
+        <button data-preset="piedra">Piedra</button><button data-preset="madera">Madera</button>
+        <button data-preset="metal">Metal</button><button data-preset="tela">Tela</button><button data-preset="suave">Suave / piel</button>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>🖼️ Base Color <small>· delight + seamless</small></h2>
+      <label class="check"><input type="checkbox" id="seamless" checked> Hacer seamless (sin costuras)</label>
+      <label class="field"><span>Mezcla de bordes</span><input type="range" id="seamBlend" min="5" max="49" value="28"><b class="val" data-for="seamBlend"></b></label>
+      <label class="field"><span>Quitar iluminación (delight)</span><input type="range" id="delight" min="0" max="100" value="35"><b class="val" data-for="delight"></b></label>
+      <label class="field"><span>Saturación</span><input type="range" id="saturation" min="0" max="200" value="100"><b class="val" data-for="saturation"></b></label>
+    </section>
+
+    <section class="card">
+      <h2>⛰️ Altura <small>· Height / Displacement / Bump</small></h2>
+      <label class="field"><span>Contraste</span><input type="range" id="hContrast" min="0" max="300" value="120"><b class="val" data-for="hContrast"></b></label>
+      <label class="field"><span>Brillo</span><input type="range" id="hBrightness" min="-100" max="100" value="0"><b class="val" data-for="hBrightness"></b></label>
+      <label class="field"><span>Suavizado (detalle)</span><input type="range" id="hBlur" min="0" max="12" step="0.5" value="1"><b class="val" data-for="hBlur"></b></label>
+      <label class="field"><span>Punto medio (displacement)</span><input type="range" id="hMid" min="0" max="100" value="50"><b class="val" data-for="hMid"></b></label>
+      <label class="check"><input type="checkbox" id="hInvert"> Invertir altura</label>
+    </section>
+
+    <section class="card">
+      <h2>🧭 Normal</h2>
+      <label class="field"><span>Intensidad</span><input type="range" id="nStrength" min="0" max="12" step="0.1" value="3"><b class="val" data-for="nStrength"></b></label>
+      <label class="field"><span>Formato</span><select id="nFormat"><option value="opengl" selected>OpenGL (Blender ✓)</option><option value="directx">DirectX (Unity/Unreal legacy)</option></select></label>
+      <p class="hint">Blender usa normales <b>OpenGL</b> (canal G hacia arriba). Si tu relieve se ve “al revés”, cambia el formato.</p>
+    </section>
+
+    <section class="card">
+      <h2>✨ Roughness / Metallic</h2>
+      <label class="field"><span>Roughness base</span><input type="range" id="rBase" min="0" max="100" value="75"><b class="val" data-for="rBase"></b></label>
+      <label class="field"><span>Roughness · variación</span><input type="range" id="rVar" min="0" max="100" value="35"><b class="val" data-for="rVar"></b></label>
+      <label class="check"><input type="checkbox" id="rInvert"> Roughness: zonas claras = pulidas</label>
+      <label class="field"><span>Metallic base</span><input type="range" id="mBase" min="0" max="100" value="0"><b class="val" data-for="mBase"></b></label>
+      <label class="field"><span>Metallic · umbral</span><input type="range" id="mThresh" min="0" max="100" value="65"><b class="val" data-for="mThresh"></b></label>
+    </section>
+
+    <section class="card">
+      <h2>🌑 Ambient Occlusion</h2>
+      <label class="field"><span>Intensidad AO</span><input type="range" id="aoStrength" min="0" max="300" value="110"><b class="val" data-for="aoStrength"></b></label>
+      <label class="field"><span>Radio / difusión</span><input type="range" id="aoRadius" min="1" max="32" step="1" value="10"><b class="val" data-for="aoRadius"></b></label>
+      <button class="btn block" id="btnRegen">↻ Regenerar mapas</button>
+      <p class="hint" id="status">Carga una foto o elige una muestra para empezar.</p>
+    </section>
+  </aside>
+
+  <!-- ══════════ VISTA PREVIA ══════════ -->
+  <section class="stage">
+    <div class="tabs">
+      <button class="tab active" data-view="2d">Mapa 2D</button>
+      <button class="tab" data-view="tile">Mosaico (tiling)</button>
+      <button class="tab" data-view="3d">Vista 3D ✨</button>
+      <span class="spacer"></span>
+      <label class="mini">Luz <input type="range" id="lightAngle" min="0" max="360" value="40"></label>
+      <label class="mini">Desplaz. 3D <input type="range" id="disp3d" min="0" max="30" value="8"></label>
+      <select id="shape3d"><option value="sphere">Esfera</option><option value="plane">Plano</option><option value="cube">Cubo</option></select>
+    </div>
+    <div class="canvas-wrap" id="dropZone">
+      <canvas id="view2d" width="640" height="640"></canvas>
+      <canvas id="view3d" width="640" height="640" hidden></canvas>
+      <div class="drop-hint" id="dropHint">Suelta aquí tu foto<br><small>PNG · JPG · WebP — todo se procesa en tu equipo, sin subir nada</small></div>
+    </div>
+    <div class="map-strip" id="mapStrip"></div>
+  </section>
+</main>
+
+<footer><span>🌿 TexPlant Studio — código abierto (GPL-3.0). Mapas: BaseColor (sRGB) · Normal / Roughness / Metallic / AO / Height / Bump / Displacement (Non-Color en Blender).</span>
+<span id="dims"></span></footer>
+<script src="js/processing.js"></script>
+<script src="js/preview3d.js"></script>
+<script src="js/export.js"></script>
+<script src="js/app.js"></script>
+</body></html>
