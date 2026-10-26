@@ -1,9 +1,14 @@
 # Análisis R.E.A. — TexPlant Studio
 
-> **R.E.A. = Requisitos · Entorno/Arquitectura · Algoritmos.**
-> Método usado para determinar los parámetros de la app a partir de la
-> investigación de PixPlant, Materialize, AwesomeBump y del flujo PBR
-> (Metallic-Roughness) que usa el Principled BSDF de Blender.
+> **R.E.A. = Reverse Engineering Anything** (aclaración del autor):
+> ingeniería inversa de la app PixPlant para determinar los parámetros
+> de TexPlant Studio. El análisis completo de caja negra — parámetros
+> observados, su interpretación y su equivalente implementado — está en
+> **[INGENIERIA_INVERSA_PIXPLANT.md](INGENIERIA_INVERSA_PIXPLANT.md)**.
+> Este documento conserva el resumen de requisitos/arquitectura que se
+> derivó de aquel análisis, contrastado también con Materialize,
+> AwesomeBump y el flujo PBR (Metallic-Roughness) del Principled BSDF
+> de Blender.
 
 PixPlant convierte una foto en un material *seamless* y extrae mapas PBR
 (Base Color con *delight*, Metallic, Roughness, Displacement, Normal,

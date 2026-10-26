@@ -6,7 +6,7 @@ completo de texturas PBR *seamless* listas para Blender.
 
 ![flujo](https://img.shields.io/badge/foto-%3E%20material%20PBR-%3E%20Blender-8fd14f)
 
-## ✨ Qué genera (los 8 mapas que pide Blender)
+## ✨ Qué genera (los 9 mapas que pide Blender)
 
 | Mapa | Archivo | En Blender |
 |---|---|---|
@@ -18,6 +18,7 @@ completo de texturas PBR *seamless* listas para Blender.
 | Roughness | `*_Roughness.png` | Roughness · Non-Color |
 | Metallic | `*_Metallic.png` | Metallic · Non-Color |
 | Ambient Occlusion | `*_AO.png` | Multiply sobre Base Color · Non-Color |
+| Opacity | `*_Opacity.png` | Principled → Alpha · Non-Color |
 
 Además: **seamless sin costuras**, vista **2D / mosaico tiling / 3D en tiempo
 real** (esfera, plano, cubo, con desplazamiento), presets (piedra, madera,
@@ -79,9 +80,12 @@ nunca salen de tu equipo.
 ## 🧠 Análisis R.E.A.
 
 Los requisitos, la arquitectura y los algoritmos/parámetros se determinaron
-con el método **R.E.A. (Requisitos · Entorno · Algoritmos)** a partir de
-PixPlant, Materialize, AwesomeBump y el flujo Metallic-Roughness de Blender:
-ver **[docs/ANALISIS_REA.md](docs/ANALISIS_REA.md)**.
+con **R.E.A. (Reverse Engineering Anything)**: ingeniería inversa de caja
+negra sobre PixPlant (documentación, historial de versiones y parámetros
+observables; sin copiar su código propietario), contrastada con Materialize,
+AwesomeBump y el flujo Metallic-Roughness de Blender:
+ver **[docs/INGENIERIA_INVERSA_PIXPLANT.md](docs/INGENIERIA_INVERSA_PIXPLANT.md)**
+y **[docs/ANALISIS_REA.md](docs/ANALISIS_REA.md)**.
 
 ## 📁 Estructura
 

@@ -45,13 +45,14 @@ function floatToImageData(arr, w, h, rgb) {
 /* ---------- seamless: mezcla cruzada de bordes (offset-blend) ----------
    Mezcla la imagen con su copia desplazada media textura; el peso crece
    hacia los bordes, así la costura desaparece y la textura repite. */
-function makeSeamless(img, w, h, blendPct) {
+function makeSeamless(img, w, h, blendPct, mode = 'both') {
   const d = img.data, out = new ImageData(w, h), o = out.data, bw = (blendPct / 100) * w, bh = (blendPct / 100) * h;
   const smooth = t => { t = clamp01(t); return t * t * (3 - 2 * t); };
+  const doX = mode === 'both' || mode === 'horizontal', doY = mode === 'both' || mode === 'vertical';
   for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
     const dx = Math.min(x, w - 1 - x), dy = Math.min(y, h - 1 - y);
-    const wx = 1 - smooth(dx / bw), wy = 1 - smooth(dy / bh), m = Math.max(wx, wy) * 0.92;
-    const sx = wrap(x + (w >> 1), w), sy = wrap(y + (h >> 1), h), p = (y * w + x) * 4, q = (sy * w + sx) * 4;
+    const wx = doX ? 1 - smooth(dx / bw) : 0, wy = doY ? 1 - smooth(dy / bh) : 0, m = Math.max(wx, wy) * 0.92;
+    const sx = doX ? wrap(x + (w >> 1), w) : x, sy = doY ? wrap(y + (h >> 1), h) : y, p = (y * w + x) * 4, q = (sy * w + sx) * 4;
     for (let c = 0; c < 4; c++) o[p + c] = d[p + c] * (1 - m) + d[q + c] * m;
   }
   return out;
@@ -62,7 +63,7 @@ function makeSeamless(img, w, h, blendPct) {
 function generateMaps(sourceImg, p) {
   const w = sourceImg.width, h = sourceImg.height, n = w * h, d = sourceImg.data;
   let base = sourceImg;
-  if (p.seamless) base = makeSeamless(base, w, h, p.seamBlend);
+  if (p.seamless) base = makeSeamless(base, w, h, p.seamBlend, p.tilingMode || 'both');
   const bd = base.data;
 
   // Luminancia base
@@ -91,9 +92,15 @@ function generateMaps(sourceImg, p) {
     height[i] = p.hInvert ? 1 - clamp01(v) : clamp01(v);
   }
   if (p.hBlur > 0) height = blurGaussianWrap(height, w, h, p.hBlur);
+  /* Range (observado en PixPlant: Extract de Displacement/Normal): comprime
+     el relieve alrededor del punto medio; útil en relieves planos (telas). */
+  const range = p.hRange ?? 1;
+  if (range !== 1) for (let i = 0; i < n; i++) height[i] = clamp01(0.5 + (height[i] - 0.5) * range);
 
-  /* Normal (Sobel toroidal). OpenGL: +Y arriba; DirectX invierte el canal G. */
-  const heightSharp = p.hBlur > 0.4 ? blurGaussianWrap(height, w, h, Math.max(0.4, p.hBlur * 0.45)) : height;
+  /* Normal (Sobel toroidal). OpenGL: +Y arriba; DirectX invierte el canal G.
+     Fine Detail (observado en PixPlant): mezcla altura nítida y suavizada. */
+  const detailBlur = (1 - (p.nDetail ?? 0.7)) * 6;
+  const heightSharp = detailBlur > 0.35 ? blurGaussianWrap(height, w, h, detailBlur) : height;
   const nRGB = new Float32Array(n * 3), st = p.nStrength, flipY = p.nFormat === 'directx' ? -1 : 1;
   for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
     const i = y * w + x;
@@ -125,6 +132,10 @@ function generateMaps(sourceImg, p) {
     bump[i] = clamp01(0.5 + (height[i] - 0.5) * 1.6);
     disp[i] = clamp01(height[i] + (0.5 - p.hMid));
   }
+  /* Opacity (mapa común en PixPlant): umbral suave sobre luminancia.
+     Por defecto todo opaco (umbral 0); súbelo para recortar fondos oscuros. */
+  const opacity = new Float32Array(n), oT = p.oThresh ?? 0, oS = Math.max(0.01, p.oSoft ?? 0.1);
+  for (let i = 0; i < n; i++) { const v = oT === 0 ? 1 : clamp01((lum[i] - oT) / oS); opacity[i] = p.oInvert ? 1 - v : v; }
   return {
     basecolor: baseColor,
     normal,
@@ -134,5 +145,6 @@ function generateMaps(sourceImg, p) {
     roughness: floatToImageData(blurGaussianWrap(rough, w, h, 1), w, h),
     metallic: floatToImageData(blurGaussianWrap(metal, w, h, 1), w, h),
     ao: floatToImageData(ao, w, h),
+    opacity: floatToImageData(blurGaussianWrap(opacity, w, h, 0.7), w, h),
   };
 }

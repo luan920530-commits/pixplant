@@ -44,6 +44,7 @@
     <section class="card">
       <h2>🖼️ Base Color <small>· delight + seamless</small></h2>
       <label class="check"><input type="checkbox" id="seamless" checked> Hacer seamless (sin costuras)</label>
+      <label class="field"><span>Modo de tiling</span><select id="tilingMode"><option value="both" selected>Ambos ejes ↔↕</option><option value="horizontal">Solo horizontal ↔</option><option value="vertical">Solo vertical ↕</option></select></label>
       <label class="field"><span>Mezcla de bordes</span><input type="range" id="seamBlend" min="5" max="49" value="28"><b class="val" data-for="seamBlend"></b></label>
       <label class="field"><span>Quitar iluminación (delight)</span><input type="range" id="delight" min="0" max="100" value="35"><b class="val" data-for="delight"></b></label>
       <label class="field"><span>Saturación</span><input type="range" id="saturation" min="0" max="200" value="100"><b class="val" data-for="saturation"></b></label>
@@ -55,12 +56,14 @@
       <label class="field"><span>Brillo</span><input type="range" id="hBrightness" min="-100" max="100" value="0"><b class="val" data-for="hBrightness"></b></label>
       <label class="field"><span>Suavizado (detalle)</span><input type="range" id="hBlur" min="0" max="12" step="0.5" value="1"><b class="val" data-for="hBlur"></b></label>
       <label class="field"><span>Punto medio (displacement)</span><input type="range" id="hMid" min="0" max="100" value="50"><b class="val" data-for="hMid"></b></label>
+      <label class="field"><span>Rango (Range · relieves planos)</span><input type="range" id="hRange" min="10" max="100" value="100"><b class="val" data-for="hRange"></b></label>
       <label class="check"><input type="checkbox" id="hInvert"> Invertir altura</label>
     </section>
 
     <section class="card">
       <h2>🧭 Normal</h2>
-      <label class="field"><span>Intensidad</span><input type="range" id="nStrength" min="0" max="12" step="0.1" value="3"><b class="val" data-for="nStrength"></b></label>
+      <label class="field"><span>Intensidad (Surface Scale)</span><input type="range" id="nStrength" min="0" max="12" step="0.1" value="3"><b class="val" data-for="nStrength"></b></label>
+      <label class="field"><span>Detalle fino (Fine Detail)</span><input type="range" id="nDetail" min="0" max="100" value="70"><b class="val" data-for="nDetail"></b></label>
       <label class="field"><span>Formato</span><select id="nFormat"><option value="opengl" selected>OpenGL (Blender ✓)</option><option value="directx">DirectX (Unity/Unreal legacy)</option></select></label>
       <p class="hint">Blender usa normales <b>OpenGL</b> (canal G hacia arriba). Si tu relieve se ve “al revés”, cambia el formato.</p>
     </section>
@@ -77,9 +80,17 @@
     <section class="card">
       <h2>🌑 Ambient Occlusion</h2>
       <label class="field"><span>Intensidad AO</span><input type="range" id="aoStrength" min="0" max="300" value="110"><b class="val" data-for="aoStrength"></b></label>
-      <label class="field"><span>Radio / difusión</span><input type="range" id="aoRadius" min="1" max="32" step="1" value="10"><b class="val" data-for="aoRadius"></b></label>
+      <label class="field"><span>Radio (Ray Distance)</span><input type="range" id="aoRadius" min="1" max="32" step="1" value="10"><b class="val" data-for="aoRadius"></b></label>
       <button class="btn block" id="btnRegen">↻ Regenerar mapas</button>
       <p class="hint" id="status">Carga una foto o elige una muestra para empezar.</p>
+    </section>
+
+    <section class="card">
+      <h2>👻 Opacity <small>· recorte alfa</small></h2>
+      <label class="field"><span>Umbral (0 = todo opaco)</span><input type="range" id="oThresh" min="0" max="95" value="0"><b class="val" data-for="oThresh"></b></label>
+      <label class="field"><span>Suavidad del borde</span><input type="range" id="oSoft" min="2" max="60" value="12"><b class="val" data-for="oSoft"></b></label>
+      <label class="check"><input type="checkbox" id="oInvert"> Invertir opacidad</label>
+      <p class="hint">En Blender se conecta al <b>Alpha</b> del Principled BSDF (hojas, telas recortadas, rejillas…).</p>
     </section>
   </aside>
 
@@ -103,7 +114,7 @@
   </section>
 </main>
 
-<footer><span>🌿 TexPlant Studio — código abierto (GPL-3.0). Mapas: BaseColor (sRGB) · Normal / Roughness / Metallic / AO / Height / Bump / Displacement (Non-Color en Blender).</span>
+<footer><span>🌿 TexPlant Studio — código abierto (GPL-3.0). Mapas: BaseColor (sRGB) · Normal / Roughness / Metallic / AO / Height / Bump / Displacement / Opacity (Non-Color en Blender).</span>
 <span id="dims"></span></footer>
 <script src="js/processing.js"></script>
 <script src="js/preview3d.js"></script>

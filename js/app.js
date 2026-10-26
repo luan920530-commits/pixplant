@@ -10,6 +10,7 @@ const MAP_DEFS = [
   ['roughness', 'Roughness', 'Roughness', 'Non-Color'],
   ['metallic', 'Metallic', 'Metallic', 'Non-Color'],
   ['ao', 'Ambient Occlusion', 'AO', 'Non-Color'],
+  ['opacity', 'Opacity', 'Opacity', 'Non-Color · Alpha'],
 ];
 const state = { source: null, maps: {}, active: 'basecolor', view: '2d', preview: null };
 const mapCanvases = {};
@@ -19,20 +20,21 @@ MAP_DEFS.forEach(([k]) => mapCanvases[k] = document.createElement('canvas'));
 const num = id => parseFloat($(id).value);
 function readParams() {
   return {
-    seamless: $('seamless').checked, seamBlend: num('seamBlend'), delight: num('delight') / 100, saturation: num('saturation') / 100,
-    hContrast: num('hContrast') / 100, hBrightness: num('hBrightness') / 100, hBlur: num('hBlur'), hMid: num('hMid') / 100, hInvert: $('hInvert').checked,
-    nStrength: num('nStrength'), nFormat: $('nFormat').value,
+    seamless: $('seamless').checked, seamBlend: num('seamBlend'), tilingMode: $('tilingMode').value, delight: num('delight') / 100, saturation: num('saturation') / 100,
+    hContrast: num('hContrast') / 100, hBrightness: num('hBrightness') / 100, hBlur: num('hBlur'), hMid: num('hMid') / 100, hRange: num('hRange') / 100, hInvert: $('hInvert').checked,
+    nStrength: num('nStrength'), nDetail: num('nDetail') / 100, nFormat: $('nFormat').value,
     rBase: num('rBase') / 100, rVar: num('rVar') / 100, rInvert: $('rInvert').checked,
     mBase: num('mBase') / 100, mThresh: num('mThresh') / 100,
     aoStrength: num('aoStrength') / 100, aoRadius: num('aoRadius'),
+    oThresh: num('oThresh') / 100, oSoft: num('oSoft') / 100, oInvert: $('oInvert').checked,
   };
 }
 const PRESETS = {
   piedra: { hContrast: 140, nStrength: 4, rBase: 85, rVar: 35, mBase: 0, aoStrength: 130 },
   madera: { hContrast: 90, nStrength: 2, rBase: 65, rVar: 30, mBase: 0, aoStrength: 80 },
   metal: { hContrast: 110, nStrength: 2.5, rBase: 35, rVar: 40, mBase: 90, mThresh: 35, aoStrength: 90 },
-  tela: { hContrast: 70, nStrength: 1.4, rBase: 95, rVar: 15, mBase: 0, aoStrength: 60 },
-  suave: { hContrast: 55, hBlur: 3, nStrength: 0.9, rBase: 55, rVar: 20, mBase: 0, aoStrength: 45 },
+  tela: { hContrast: 70, hRange: 60, nStrength: 1.4, nDetail: 85, rBase: 95, rVar: 15, mBase: 0, aoStrength: 60 },
+  suave: { hContrast: 55, hRange: 65, hBlur: 3, nStrength: 0.9, nDetail: 35, rBase: 55, rVar: 20, mBase: 0, aoStrength: 45 },
 };
 function applyPreset(name) {
   for (const [k, v] of Object.entries(PRESETS[name])) if ($(k)) { $(k).value = v; syncVals(); }
@@ -226,7 +228,7 @@ $('btnZip').onclick = async () => {
   files.push({ name: `${name}/${name}_Blender.py`, text: blenderScript(name) });
   files.push({ name: `${name}/LEEME.txt`, text: `Material ${name} — generado con TexPlant Studio\n\n1. En Blender: Scripting → Open → ${name}_Blender.py → Run Script (con el objeto seleccionado).\n2. Los mapas Non-Color ya quedan configurados; Base Color en sRGB.\n3. Para desplazamiento real: USE_DISPLACEMENT=True en el script + Cycles.\n` });
   download(await makeZip(files), `${name}_PBR.zip`);
-  $('status').textContent = '✓ ZIP exportado con los 8 mapas + script de Blender.';
+  $('status').textContent = `✓ ZIP exportado con los ${MAP_DEFS.length} mapas + script de Blender.`;
 };
 
 /* ---------- arranque ---------- */
