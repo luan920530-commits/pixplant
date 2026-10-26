@@ -32,14 +32,16 @@ código para las tres plataformas):
 
 | Plataforma | Instalador |
 |---|---|
-| **Mac con Intel (x64)** | `.dmg` / `.zip` — *TexPlant-Studio-…-mac-intel* |
+| **Mac 13 / macOS 13 Ventura (Intel x64)** | `.dmg` / `.zip` — *TexPlant-Studio-…-macos13-intel* (icono Pix) |
 | **Windows (x64)** | `.exe` instalador NSIS + portable |
 | **Linux (x64)** | `.AppImage` + `.deb` |
 
 **Descargarlos:** en GitHub → *Actions* → **Build native apps** (o al publicar
 un tag `v*`) se compila cada instalador en una máquina real de su sistema
-(`.github/workflows/build-native.yml`: `macos-15-intel` = Mac Intel x64
-—`macos-13` fue retirado por GitHub—, `windows-latest`,
+(`.github/workflows/build-native.yml`: se compila en `macos-15-intel`
+—la etiqueta `macos-13` fue retirada por GitHub— pero el paquete declara
+`minimumSystemVersion: 13.0`, es decir, destino **macOS 13 Ventura**;
+`windows-latest`,
 `ubuntu-latest`) y quedan como artefactos descargables.
 
 **Ejecutarla / compilarla en tu equipo:**
@@ -47,7 +49,7 @@ un tag `v*`) se compila cada instalador en una máquina real de su sistema
 ```bash
 npm ci
 npm run desktop        # abre la app nativa sin empaquetar
-npm run dist:mac-intel # macOS Intel  (hacerlo en un Mac Intel)
+npm run dist:mac13     # macOS 13 Ventura Intel (.dmg/.zip, icono Pix)
 npm run dist:win       # Windows      (hacerlo en Windows)
 npm run dist:linux     # Linux        (.AppImage / .deb)
 ```
