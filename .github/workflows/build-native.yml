@@ -1,7 +1,9 @@
 name: Build native apps (macOS Intel · Windows · Linux)
 
 # Compila los instaladores nativos en máquinas reales de cada sistema:
-#   macos-13     → Mac con procesador Intel (x64)  .dmg / .zip
+#   macos-15-intel → Mac con procesador Intel (x64) .dmg / .zip
+#                    (macos-13 fue retirado por GitHub el 2025-12-04;
+#                     macos-15-intel es su reemplazo oficial, hasta ago-2027)
 #   windows-latest → Windows (x64)                .exe (NSIS + portable)
 #   ubuntu-latest  → Linux (x64)                  .AppImage / .deb
 on:
@@ -13,12 +15,13 @@ jobs:
   build:
     name: ${{ matrix.name }}
     runs-on: ${{ matrix.os }}
+    timeout-minutes: 40
     strategy:
       fail-fast: false
       matrix:
         include:
           - name: macOS Intel
-            os: macos-13 # runner Intel x86_64 (no Apple Silicon)
+            os: macos-15-intel # runner Intel x86_64 real (reemplazo de macos-13, retirado)
             target: mac
           - name: Windows
             os: windows-latest

@@ -37,7 +37,8 @@ código para las tres plataformas):
 
 **Descargarlos:** en GitHub → *Actions* → **Build native apps** (o al publicar
 un tag `v*`) se compila cada instalador en una máquina real de su sistema
-(`.github/workflows/build-native.yml`: `macos-13` = Intel, `windows-latest`,
+(`.github/workflows/build-native.yml`: `macos-15-intel` = Mac Intel x64
+—`macos-13` fue retirado por GitHub—, `windows-latest`,
 `ubuntu-latest`) y quedan como artefactos descargables.
 
 **Ejecutarla / compilarla en tu equipo:**
