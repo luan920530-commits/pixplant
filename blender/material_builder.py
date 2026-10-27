@@ -14,6 +14,7 @@ FILES = {
     "metallic": (f"{MATERIAL_NAME}_Metallic.png", "Non-Color"),
     "ao": (f"{MATERIAL_NAME}_AO.png", "Non-Color"),
     "height": (f"{MATERIAL_NAME}_Height.png", "Non-Color"),
+    "opacity": (f"{MATERIAL_NAME}_Opacity.png", "Non-Color"),
 }
 
 mat = bpy.data.materials.new(MATERIAL_NAME)
@@ -40,6 +41,8 @@ nt.links.new(base.outputs["Color"], mix.inputs[1]); nt.links.new(ao.outputs["Col
 nt.links.new(mix.outputs["Color"], bsdf.inputs["Base Color"])
 nt.links.new(place("metallic", -120).outputs["Color"], bsdf.inputs["Metallic"])
 nt.links.new(place("roughness", -300).outputs["Color"], bsdf.inputs["Roughness"])
+if "Alpha" in bsdf.inputs:
+    nt.links.new(place("opacity", -840).outputs["Color"], bsdf.inputs["Alpha"])
 nmap = nt.nodes.new("ShaderNodeNormalMap"); nmap.location = (60, -480)
 nt.links.new(place("normal", -480).outputs["Color"], nmap.inputs["Color"])
 height = place("height", -660)

@@ -1,9 +1,13 @@
 name: Build native apps (macOS Intel · Windows · Linux)
 
 # Compila los instaladores nativos en máquinas reales de cada sistema:
-#   macos-15-intel → Mac con procesador Intel (x64) .dmg / .zip
-#                    (macos-13 fue retirado por GitHub el 2025-12-04;
-#                     macos-15-intel es su reemplazo oficial, hasta ago-2027)
+#   macos-15-intel → paquete para macOS 12+ (Monterey) Intel (x64) .dmg/.zip
+#                    Se compila en el runner Intel vigente (la etiqueta
+#                    macos-13 fue retirada por GitHub el 2025-12-04), pero
+#                    el paquete declara minimumSystemVersion 12.0 y usa
+#                    Electron 43 (la última línea compatible con Monterey;
+#                    Electron 44+ exige macOS 13), así que el artefacto
+#                    resultante funciona en Monterey, Ventura y posteriores.
 #   windows-latest → Windows (x64)                .exe (NSIS + portable)
 #   ubuntu-latest  → Linux (x64)                  .AppImage / .deb
 on:
@@ -20,8 +24,8 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - name: macOS Intel
-            os: macos-15-intel # runner Intel x86_64 real (reemplazo de macos-13, retirado)
+          - name: macOS Monterey Intel
+            os: macos-15-intel # runner Intel x86_64 real; destino: macOS 12+ (Monterey)
             target: mac
           - name: Windows
             os: windows-latest
@@ -30,17 +34,17 @@ jobs:
             os: ubuntu-latest
             target: linux
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
-          node-version: 20
+          node-version: 22 # requerido por Electron 43 (node >= 22.12)
           cache: npm
       - name: Instalar dependencias
         run: npm ci
       - name: Compilar instalador (${{ matrix.name }})
         run: npx electron-builder --${{ matrix.target }} --x64 --publish never
       - name: Subir artefacto
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: TexPlant-${{ matrix.name }}
           path: |

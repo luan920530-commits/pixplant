@@ -1,0 +1,22 @@
+# Dependabot: avisa (PR automático) cuando Electron, electron-builder
+# o las GitHub Actions del workflow de compilación queden desactualizadas.
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 3
+    labels: ["dependencias"]
+    commit-message:
+      prefix: "deps"
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 3
+    labels: ["ci"]
+    commit-message:
+      prefix: "ci"

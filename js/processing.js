@@ -45,15 +45,25 @@ function floatToImageData(arr, w, h, rgb) {
 /* ---------- seamless: mezcla cruzada de bordes (offset-blend) ----------
    Mezcla la imagen con su copia desplazada media textura; el peso crece
    hacia los bordes, así la costura desaparece y la textura repite. */
-function makeSeamless(img, w, h, blendPct) {
+function makeSeamless(img, w, h, blendPct, mode = 'both') {
   const d = img.data, out = new ImageData(w, h), o = out.data, bw = (blendPct / 100) * w, bh = (blendPct / 100) * h;
   const smooth = t => { t = clamp01(t); return t * t * (3 - 2 * t); };
+  const doX = mode === 'both' || mode === 'horizontal', doY = mode === 'both' || mode === 'vertical';
   for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
     const dx = Math.min(x, w - 1 - x), dy = Math.min(y, h - 1 - y);
-    const wx = 1 - smooth(dx / bw), wy = 1 - smooth(dy / bh), m = Math.max(wx, wy) * 0.92;
-    const sx = wrap(x + (w >> 1), w), sy = wrap(y + (h >> 1), h), p = (y * w + x) * 4, q = (sy * w + sx) * 4;
+    const wx = doX ? 1 - smooth(dx / bw) : 0, wy = doY ? 1 - smooth(dy / bh) : 0, m = Math.max(wx, wy) * 0.92;
+    const sx = doX ? wrap(x + (w >> 1), w) : x, sy = doY ? wrap(y + (h >> 1), h) : y, p = (y * w + x) * 4, q = (sy * w + sx) * 4;
     for (let c = 0; c < 4; c++) o[p + c] = d[p + c] * (1 - m) + d[q + c] * m;
   }
+  return out;
+}
+
+/* Desenfoque toroidal por canal RGB (reducción de ruido / nitidez) */
+function blurRGBWrap(rgb, w, h, radius) {
+  if (radius <= 0) return rgb;
+  const n = w * h, out = new Float32Array(rgb.length), ch = [[], [], []];
+  for (let c = 0; c < 3; c++) { const a = new Float32Array(n); for (let i = 0; i < n; i++) a[i] = rgb[i * 3 + c]; ch[c] = blurGaussianWrap(a, w, h, radius); }
+  for (let i = 0; i < n; i++) for (let c = 0; c < 3; c++) out[i * 3 + c] = ch[c][i];
   return out;
 }
 
@@ -62,19 +72,35 @@ function makeSeamless(img, w, h, blendPct) {
 function generateMaps(sourceImg, p) {
   const w = sourceImg.width, h = sourceImg.height, n = w * h, d = sourceImg.data;
   let base = sourceImg;
-  if (p.seamless) base = makeSeamless(base, w, h, p.seamBlend);
+  if (p.seamless) base = makeSeamless(base, w, h, p.seamBlend, p.tilingMode || 'both');
   const bd = base.data;
 
-  // Luminancia base
+  /* ── Tratamiento de la imagen fuente (pensado para Blender) ──
+     Exposición/contraste/temperatura → reducción de ruido → nitidez.
+     Todo toroidal: no rompe el seamless. */
+  let srcRGB = new Float32Array(n * 3);
+  const ev = Math.pow(2, p.imgExposure ?? 0), iCon = p.imgContrast ?? 1, temp = p.imgTemp ?? 0;
+  for (let i = 0, q = 0; i < n; i++, q += 4) {
+    let r = bd[q] / 255 * ev, g = bd[q + 1] / 255 * ev, b = bd[q + 2] / 255 * ev;
+    r = 0.5 + (r - 0.5) * iCon; g = 0.5 + (g - 0.5) * iCon; b = 0.5 + (b - 0.5) * iCon;
+    srcRGB[i * 3] = clamp01(r + temp * 0.18); srcRGB[i * 3 + 1] = clamp01(g); srcRGB[i * 3 + 2] = clamp01(b - temp * 0.18);
+  }
+  if ((p.denoise ?? 0) > 0) srcRGB = blurRGBWrap(srcRGB, w, h, p.denoise);
+  if ((p.sharpen ?? 0) > 0) {
+    const soft = blurRGBWrap(srcRGB, w, h, 1.6);
+    for (let i = 0; i < srcRGB.length; i++) srcRGB[i] = clamp01(srcRGB[i] + (srcRGB[i] - soft[i]) * p.sharpen);
+  }
+
+  // Luminancia ya tratada
   let lum = new Float32Array(n);
-  for (let i = 0, q = 0; i < n; i++, q += 4) lum[i] = luminance(bd[q], bd[q + 1], bd[q + 2]) / 255;
+  for (let i = 0; i < n; i++) lum[i] = luminance(srcRGB[i * 3], srcRGB[i * 3 + 1], srcRGB[i * 3 + 2]);
 
   /* BaseColor: delight (divide por la iluminación borrosa estimada) + saturación */
   const shade = blurGaussianWrap(lum, w, h, Math.max(8, w / 12));
   let mean = 0; for (let i = 0; i < n; i++) mean += shade[i]; mean /= n;
   const rgb = new Float32Array(n * 3), s = p.delight, sat = p.saturation;
   for (let i = 0, q = 0; i < n; i++, q += 4) {
-    let r = bd[q] / 255, g = bd[q + 1] / 255, b = bd[q + 2] / 255;
+    let r = srcRGB[i * 3], g = srcRGB[i * 3 + 1], b = srcRGB[i * 3 + 2];
     const f = Math.pow(clamp01(shade[i] / Math.max(0.08, mean)), -s * 0.9); // aclara sombras, apaga brillos
     r = clamp01(r * f); g = clamp01(g * f); b = clamp01(b * f);
     const gray = luminance(r, g, b);
@@ -83,17 +109,28 @@ function generateMaps(sourceImg, p) {
   const baseColor = floatToImageData(lum, w, h, rgb);
 
   /* Height: contraste/brillo → suavizado.
-     Se resta la iluminación de baja frecuencia para no "hornear" sombras. */
+     Detalle multiescala: se refuerza (o suaviza) la diferencia entre la
+     luminancia y su versión borrosa a escala media antes de derivar. */
+  const midBlur = blurGaussianWrap(lum, w, h, Math.max(2, w / 72));
+  const detW = p.hDetail ?? 1;
+  let lumH = lum;
+  if (detW !== 1) { lumH = new Float32Array(n); for (let i = 0; i < n; i++) lumH[i] = clamp01(lum[i] + (lum[i] - midBlur[i]) * (detW - 1) * 1.6); }
   let height = new Float32Array(n);
   for (let i = 0; i < n; i++) {
-    let v = (lum[i] - shade[i]) * 0.65 + lum[i] * 0.35;
+    let v = (lumH[i] - shade[i]) * 0.65 + lumH[i] * 0.35;
     v = 0.5 + (v - 0.5) * p.hContrast + p.hBrightness;
     height[i] = p.hInvert ? 1 - clamp01(v) : clamp01(v);
   }
   if (p.hBlur > 0) height = blurGaussianWrap(height, w, h, p.hBlur);
+  /* Range (observado en PixPlant: Extract de Displacement/Normal): comprime
+     el relieve alrededor del punto medio; útil en relieves planos (telas). */
+  const range = p.hRange ?? 1;
+  if (range !== 1) for (let i = 0; i < n; i++) height[i] = clamp01(0.5 + (height[i] - 0.5) * range);
 
-  /* Normal (Sobel toroidal). OpenGL: +Y arriba; DirectX invierte el canal G. */
-  const heightSharp = p.hBlur > 0.4 ? blurGaussianWrap(height, w, h, Math.max(0.4, p.hBlur * 0.45)) : height;
+  /* Normal (Sobel toroidal). OpenGL: +Y arriba; DirectX invierte el canal G.
+     Fine Detail (observado en PixPlant): mezcla altura nítida y suavizada. */
+  const detailBlur = (1 - (p.nDetail ?? 0.7)) * 6;
+  const heightSharp = detailBlur > 0.35 ? blurGaussianWrap(height, w, h, detailBlur) : height;
   const nRGB = new Float32Array(n * 3), st = p.nStrength, flipY = p.nFormat === 'directx' ? -1 : 1;
   for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
     const i = y * w + x;
@@ -125,7 +162,11 @@ function generateMaps(sourceImg, p) {
     bump[i] = clamp01(0.5 + (height[i] - 0.5) * 1.6);
     disp[i] = clamp01(height[i] + (0.5 - p.hMid));
   }
-  return {
+  /* Opacity (mapa común en PixPlant): umbral suave sobre luminancia.
+     Por defecto todo opaco (umbral 0); súbelo para recortar fondos oscuros. */
+  const opacity = new Float32Array(n), oT = p.oThresh ?? 0, oS = Math.max(0.01, p.oSoft ?? 0.1);
+  for (let i = 0; i < n; i++) { const v = oT === 0 ? 1 : clamp01((lum[i] - oT) / oS); opacity[i] = p.oInvert ? 1 - v : v; }
+  const maps = {
     basecolor: baseColor,
     normal,
     height: floatToImageData(height, w, h),
@@ -134,5 +175,10 @@ function generateMaps(sourceImg, p) {
     roughness: floatToImageData(blurGaussianWrap(rough, w, h, 1), w, h),
     metallic: floatToImageData(blurGaussianWrap(metal, w, h, 1), w, h),
     ao: floatToImageData(ao, w, h),
+    opacity: floatToImageData(blurGaussianWrap(opacity, w, h, 0.7), w, h),
   };
+  /* Datos flotantes para exportar a 16 bits (Blender: Displacement y
+     Normal sin bandas). No son ImageData; la UI los ignora. */
+  maps._float16 = { width: w, height: h, normal: nRGB, displacement: disp };
+  return maps;
 }

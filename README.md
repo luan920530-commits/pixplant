@@ -6,18 +6,19 @@ completo de texturas PBR *seamless* listas para Blender.
 
 ![flujo](https://img.shields.io/badge/foto-%3E%20material%20PBR-%3E%20Blender-8fd14f)
 
-## ✨ Qué genera (los 8 mapas que pide Blender)
+## ✨ Qué genera (los 9 mapas que pide Blender)
 
 | Mapa | Archivo | En Blender |
 |---|---|---|
 | Base Color (con *delight*) | `*_BaseColor.png` | Principled → Base Color · **sRGB** |
-| Normal (OpenGL/DirectX) | `*_Normal.png` | Normal Map → Normal · Non-Color |
+| Normal (OpenGL/DirectX) | `*_Normal.png` **16 bits** | Normal Map → Normal · Non-Color |
 | Height | `*_Height.png` | Bump / Displacement · Non-Color |
 | Bump | `*_Bump.png` | Bump · Non-Color |
-| Displacement | `*_Displacement.png` | Displacement (Cycles) · Non-Color |
+| Displacement | `*_Displacement.png` **16 bits** | Displacement (Cycles) · Non-Color |
 | Roughness | `*_Roughness.png` | Roughness · Non-Color |
 | Metallic | `*_Metallic.png` | Metallic · Non-Color |
 | Ambient Occlusion | `*_AO.png` | Multiply sobre Base Color · Non-Color |
+| Opacity | `*_Opacity.png` | Principled → Alpha · Non-Color |
 
 Además: **seamless sin costuras**, vista **2D / mosaico tiling / 3D en tiempo
 real** (esfera, plano, cubo, con desplazamiento), presets (piedra, madera,
@@ -31,14 +32,16 @@ código para las tres plataformas):
 
 | Plataforma | Instalador |
 |---|---|
-| **Mac con Intel (x64)** | `.dmg` / `.zip` — *TexPlant-Studio-…-mac-intel* |
+| **Mac Monterey / macOS 12+ (Intel x64)** | `.dmg` / `.zip` — *TexPlant-Studio-…-macos-monterey-intel* (icono Pix) |
 | **Windows (x64)** | `.exe` instalador NSIS + portable |
 | **Linux (x64)** | `.AppImage` + `.deb` |
 
 **Descargarlos:** en GitHub → *Actions* → **Build native apps** (o al publicar
 un tag `v*`) se compila cada instalador en una máquina real de su sistema
-(`.github/workflows/build-native.yml`: `macos-15-intel` = Mac Intel x64
-—`macos-13` fue retirado por GitHub—, `windows-latest`,
+(`.github/workflows/build-native.yml`: se compila en `macos-15-intel`
+—la etiqueta `macos-13` fue retirada por GitHub— pero el paquete declara
+`minimumSystemVersion: 12.0`, es decir, destino **macOS 12 Monterey** (también Ventura y posteriores);
+`windows-latest`,
 `ubuntu-latest`) y quedan como artefactos descargables.
 
 **Ejecutarla / compilarla en tu equipo:**
@@ -46,13 +49,14 @@ un tag `v*`) se compila cada instalador en una máquina real de su sistema
 ```bash
 npm ci
 npm run desktop        # abre la app nativa sin empaquetar
-npm run dist:mac-intel # macOS Intel  (hacerlo en un Mac Intel)
+npm run dist:mac-monterey  # macOS 12 Monterey Intel (.dmg/.zip, icono Pix)
 npm run dist:win       # Windows      (hacerlo en Windows)
 npm run dist:linux     # Linux        (.AppImage / .deb)
 ```
 
-La versión nativa añade menú **Archivo → Abrir imagen… (Ctrl/Cmd+O)**
-y funciona sin servidor ni internet.
+La versión nativa (v1.4.0: **Electron 43** —última línea compatible con Monterey— + electron-builder 26) añade menú **Archivo → Abrir imagen… (Ctrl/Cmd+O)**
+y funciona sin servidor ni internet. Plan de mejoras y auditoría de
+ramas/librerías: [docs/MEJORAS_Y_ACTUALIZACIONES.md](docs/MEJORAS_Y_ACTUALIZACIONES.md).
 
 ## 🚀 Versión web / PWA
 
@@ -79,9 +83,12 @@ nunca salen de tu equipo.
 ## 🧠 Análisis R.E.A.
 
 Los requisitos, la arquitectura y los algoritmos/parámetros se determinaron
-con el método **R.E.A. (Requisitos · Entorno · Algoritmos)** a partir de
-PixPlant, Materialize, AwesomeBump y el flujo Metallic-Roughness de Blender:
-ver **[docs/ANALISIS_REA.md](docs/ANALISIS_REA.md)**.
+con **R.E.A. (Reverse Engineering Anything)**: ingeniería inversa de caja
+negra sobre PixPlant (documentación, historial de versiones y parámetros
+observables; sin copiar su código propietario), contrastada con Materialize,
+AwesomeBump y el flujo Metallic-Roughness de Blender:
+ver **[docs/INGENIERIA_INVERSA_PIXPLANT.md](docs/INGENIERIA_INVERSA_PIXPLANT.md)**
+y **[docs/ANALISIS_REA.md](docs/ANALISIS_REA.md)**.
 
 ## 📁 Estructura
 
