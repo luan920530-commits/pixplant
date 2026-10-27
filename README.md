@@ -11,10 +11,10 @@ completo de texturas PBR *seamless* listas para Blender.
 | Mapa | Archivo | En Blender |
 |---|---|---|
 | Base Color (con *delight*) | `*_BaseColor.png` | Principled → Base Color · **sRGB** |
-| Normal (OpenGL/DirectX) | `*_Normal.png` | Normal Map → Normal · Non-Color |
+| Normal (OpenGL/DirectX) | `*_Normal.png` **16 bits** | Normal Map → Normal · Non-Color |
 | Height | `*_Height.png` | Bump / Displacement · Non-Color |
 | Bump | `*_Bump.png` | Bump · Non-Color |
-| Displacement | `*_Displacement.png` | Displacement (Cycles) · Non-Color |
+| Displacement | `*_Displacement.png` **16 bits** | Displacement (Cycles) · Non-Color |
 | Roughness | `*_Roughness.png` | Roughness · Non-Color |
 | Metallic | `*_Metallic.png` | Metallic · Non-Color |
 | Ambient Occlusion | `*_AO.png` | Multiply sobre Base Color · Non-Color |

@@ -29,15 +29,28 @@ Canvas/WebGL puros): no hay nada que actualizar ahí, y es deliberado
 
 ## 3 · Mejoras propuestas, por impacto
 
+> **Alcance (decisión del autor): TexPlant es solo para Blender.**
+> Nada de presets Unreal/Unity ni ORM: todo el esfuerzo va al flujo
+> Principled BSDF / Cycles / EEVEE.
+
+### ✅ Hecho en la pasada “solo Blender” (v1.3.x)
+- **Tratamiento de imagen**: exposición, contraste, temperatura,
+  reducción de ruido, nitidez y detalle multiescala antes de derivar.
+- **Exportación 16 bits** de Normal y Displacement (PNG codificado desde
+  los `Float32Array` internos): desplazamiento en Cycles sin bandas.
+- **Espacio de visualización PRO**: zoom/pan en 2D, comparación
+  Antes/Después, aislamiento de canales RGB/luminancia, histograma con
+  estadísticas, panel plegable y pantalla completa.
+
 ### 🔴 Alto impacto (función “de PixPlant” que aún falta)
 1. **Seed Wizard**: enderezar la foto (homografía por 4 puntos),
    detección de rejilla de patrón y *Snap Scale to Seed Pattern* con
    Seed Scale 25–250 %. Es la herramienta insignia de PixPlant.
-2. **Exportación 16 bits** de Normal/Displacement (PNG de 16 bits
-   codificado a mano desde los `Float32Array` internos) — paridad con
-   el “Default Map Bits” de PixPlant y relieves sin bandas en Blender.
-3. **Mapa ORM empaquetado** y presets de exportación Unreal/Unity
-   (R=AO, G=Roughness, B=Metallic) además del de Blender.
+2. **Addon de Blender** (`.zip` instalable en Preferences → Add-ons)
+   que haga lo mismo que el script suelto, con panel propio.
+3. **Grupos de nodos reutilizables**: guardar el material como
+   *node group* con controles (escala, fuerza de normal/bump,
+   rotación) expuestos en el panel del material.
 
 ### 🟠 Impacto medio (flujo de trabajo)
 4. **Edición toroidal por píxel**: Offset, Paint y Clone envolventes

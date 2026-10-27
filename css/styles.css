@@ -164,3 +164,15 @@ button:focus-visible,label:focus-visible,input:focus-visible,select:focus-visibl
 @media(max-width:980px){.layout{grid-template-columns:1fr}.brand p{display:none}.stage-head{align-items:center}.field span{flex-basis:112px}}
 @media(max-width:620px){.topbar{padding:12px}.layout{padding:11px}.tabs{gap:5px}.mini input[type=range]{width:58px}.engine-chip{display:none}.brand h1{font-size:19px}.version-pill{display:none}}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.001s!important;animation-iteration-count:1!important;transition-duration:.001s!important;scroll-behavior:auto!important}}
+
+/* ── Espacio de visualización PRO (solo Blender) ── */
+.viewer-tools{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:12px;padding:8px 10px;border:1px solid var(--line);border-radius:14px;background:rgba(3,8,20,.45)}
+.viewer-tools .btn{min-height:32px;padding:6px 11px;font-size:12px}
+.viewer-tools select{background:rgba(3,8,20,.7);color:var(--txt);border:1px solid var(--line);border-radius:999px;padding:6px 9px}
+.zoom-label{min-width:46px;text-align:center;color:#5eead4;font-size:12px;font-variant-numeric:tabular-nums}
+.viewer-hint{color:var(--mut2);font-size:11px}
+.layout.panel-hidden{grid-template-columns:minmax(0,1fr)}
+.layout.panel-hidden .panel{display:none}
+.stage:fullscreen{overflow:auto;border-radius:0}
+#histogram{width:100%;height:64px;display:block;margin-top:10px;border:1px solid var(--line);border-radius:12px;background:rgba(3,8,20,.55)}
+#view2d{cursor:grab}#view2d:active{cursor:grabbing}

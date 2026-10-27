@@ -64,6 +64,18 @@
     </section>
 
     <section class="card">
+      <h2><svg class="icon"><use href="#i-spark"/></svg> Tratamiento de imagen <small>· fuente</small></h2>
+      <label class="field"><span>Exposición</span><input type="range" id="imgExposure" min="-100" max="100" value="0"><b class="val" data-for="imgExposure"></b></label>
+      <label class="field"><span>Contraste foto</span><input type="range" id="imgContrast" min="0" max="200" value="100"><b class="val" data-for="imgContrast"></b></label>
+      <label class="field"><span>Temperatura</span><input type="range" id="imgTemp" min="-100" max="100" value="0"><b class="val" data-for="imgTemp"></b></label>
+      <label class="field"><span>Reducción de ruido</span><input type="range" id="denoise" min="0" max="8" step="0.5" value="0"><b class="val" data-for="denoise"></b></label>
+      <label class="field"><span>Nitidez</span><input type="range" id="sharpen" min="0" max="200" value="0"><b class="val" data-for="sharpen"></b></label>
+      <label class="field"><span>Detalle multiescala</span><input type="range" id="hDetail" min="0" max="300" value="100"><b class="val" data-for="hDetail"></b></label>
+      <canvas id="histogram" width="272" height="64" title="Histograma del mapa activo"></canvas>
+      <p class="hint" id="histStats">Histograma del mapa activo.</p>
+    </section>
+
+    <section class="card">
       <h2><svg class="icon"><use href="#i-image"/></svg> Base Color <small>· delight + seamless</small></h2>
       <label class="check"><input type="checkbox" id="seamless" checked> Hacer seamless (sin costuras)</label>
       <label class="field"><span>Modo de tiling</span><select id="tilingMode"><option value="both" selected>Ambos ejes ↔↕</option><option value="horizontal">Solo horizontal ↔</option><option value="vertical">Solo vertical ↕</option></select></label>
@@ -126,6 +138,7 @@
       <button class="tab active" data-view="2d"><svg class="icon"><use href="#i-image"/></svg> Mapa 2D</button>
       <button class="tab" data-view="tile"><svg class="icon"><use href="#i-grid"/></svg> Mosaico</button>
       <button class="tab" data-view="3d"><svg class="icon"><use href="#i-cube"/></svg> Vista 3D</button>
+      <button class="tab" data-view="compare"><svg class="icon"><use href="#i-eye"/></svg> Comparar</button>
       <span class="spacer"></span>
       <label class="mini">Luz <input type="range" id="lightAngle" min="0" max="360" value="40"></label>
       <label class="mini">Desplaz. 3D <input type="range" id="disp3d" min="0" max="30" value="8"></label>
@@ -134,6 +147,19 @@
       <label class="mini check-inline"><input type="checkbox" id="autoRotate" checked> Girar</label>
       <button class="btn btn-icon" id="btnResetView" title="Reiniciar cámara (o doble clic en la vista 3D)"><svg class="icon"><use href="#i-reset"/></svg> Vista</button>
       <select id="shape3d"><option value="sphere">Esfera</option><option value="plane">Plano</option><option value="cube">Cubo</option></select>
+    </div>
+    <div class="viewer-tools">
+      <button class="btn btn-icon" id="btnCollapse" title="Ocultar/mostrar el panel de controles">☰ Panel</button>
+      <label class="mini">Canal
+        <select id="channelView"><option value="all">RGB</option><option value="r">R</option><option value="g">G</option><option value="b">B</option><option value="lum">Luminancia</option></select></label>
+      <button class="btn btn-icon" id="zoomOut" title="Alejar">−</button>
+      <span class="zoom-label" id="zoomLabel">100%</span>
+      <button class="btn btn-icon" id="zoomIn" title="Acercar">+</button>
+      <button class="btn btn-icon" id="zoomFit" title="Ajustar a la vista (doble clic)">Ajustar</button>
+      <label class="mini" id="compareCtl" hidden>Antes/Después <input type="range" id="comparePos" min="5" max="95" value="50"></label>
+      <span class="spacer"></span>
+      <span class="viewer-hint">Rueda: zoom · arrastrar: desplazar</span>
+      <button class="btn btn-icon" id="btnFullscreen" title="Pantalla completa">⛶ Completa</button>
     </div>
     <div class="canvas-wrap" id="dropZone">
       <canvas id="view2d" width="640" height="640"></canvas>

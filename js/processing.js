@@ -58,6 +58,15 @@ function makeSeamless(img, w, h, blendPct, mode = 'both') {
   return out;
 }
 
+/* Desenfoque toroidal por canal RGB (reducción de ruido / nitidez) */
+function blurRGBWrap(rgb, w, h, radius) {
+  if (radius <= 0) return rgb;
+  const n = w * h, out = new Float32Array(rgb.length), ch = [[], [], []];
+  for (let c = 0; c < 3; c++) { const a = new Float32Array(n); for (let i = 0; i < n; i++) a[i] = rgb[i * 3 + c]; ch[c] = blurGaussianWrap(a, w, h, radius); }
+  for (let i = 0; i < n; i++) for (let c = 0; c < 3; c++) out[i * 3 + c] = ch[c][i];
+  return out;
+}
+
 /* ---------- pipeline principal ---------- */
 /* p = parámetros (ver app.js: readParams). Devuelve {clave: ImageData} */
 function generateMaps(sourceImg, p) {
@@ -66,16 +75,32 @@ function generateMaps(sourceImg, p) {
   if (p.seamless) base = makeSeamless(base, w, h, p.seamBlend, p.tilingMode || 'both');
   const bd = base.data;
 
-  // Luminancia base
+  /* ── Tratamiento de la imagen fuente (pensado para Blender) ──
+     Exposición/contraste/temperatura → reducción de ruido → nitidez.
+     Todo toroidal: no rompe el seamless. */
+  let srcRGB = new Float32Array(n * 3);
+  const ev = Math.pow(2, p.imgExposure ?? 0), iCon = p.imgContrast ?? 1, temp = p.imgTemp ?? 0;
+  for (let i = 0, q = 0; i < n; i++, q += 4) {
+    let r = bd[q] / 255 * ev, g = bd[q + 1] / 255 * ev, b = bd[q + 2] / 255 * ev;
+    r = 0.5 + (r - 0.5) * iCon; g = 0.5 + (g - 0.5) * iCon; b = 0.5 + (b - 0.5) * iCon;
+    srcRGB[i * 3] = clamp01(r + temp * 0.18); srcRGB[i * 3 + 1] = clamp01(g); srcRGB[i * 3 + 2] = clamp01(b - temp * 0.18);
+  }
+  if ((p.denoise ?? 0) > 0) srcRGB = blurRGBWrap(srcRGB, w, h, p.denoise);
+  if ((p.sharpen ?? 0) > 0) {
+    const soft = blurRGBWrap(srcRGB, w, h, 1.6);
+    for (let i = 0; i < srcRGB.length; i++) srcRGB[i] = clamp01(srcRGB[i] + (srcRGB[i] - soft[i]) * p.sharpen);
+  }
+
+  // Luminancia ya tratada
   let lum = new Float32Array(n);
-  for (let i = 0, q = 0; i < n; i++, q += 4) lum[i] = luminance(bd[q], bd[q + 1], bd[q + 2]) / 255;
+  for (let i = 0; i < n; i++) lum[i] = luminance(srcRGB[i * 3], srcRGB[i * 3 + 1], srcRGB[i * 3 + 2]);
 
   /* BaseColor: delight (divide por la iluminación borrosa estimada) + saturación */
   const shade = blurGaussianWrap(lum, w, h, Math.max(8, w / 12));
   let mean = 0; for (let i = 0; i < n; i++) mean += shade[i]; mean /= n;
   const rgb = new Float32Array(n * 3), s = p.delight, sat = p.saturation;
   for (let i = 0, q = 0; i < n; i++, q += 4) {
-    let r = bd[q] / 255, g = bd[q + 1] / 255, b = bd[q + 2] / 255;
+    let r = srcRGB[i * 3], g = srcRGB[i * 3 + 1], b = srcRGB[i * 3 + 2];
     const f = Math.pow(clamp01(shade[i] / Math.max(0.08, mean)), -s * 0.9); // aclara sombras, apaga brillos
     r = clamp01(r * f); g = clamp01(g * f); b = clamp01(b * f);
     const gray = luminance(r, g, b);
@@ -84,10 +109,15 @@ function generateMaps(sourceImg, p) {
   const baseColor = floatToImageData(lum, w, h, rgb);
 
   /* Height: contraste/brillo → suavizado.
-     Se resta la iluminación de baja frecuencia para no "hornear" sombras. */
+     Detalle multiescala: se refuerza (o suaviza) la diferencia entre la
+     luminancia y su versión borrosa a escala media antes de derivar. */
+  const midBlur = blurGaussianWrap(lum, w, h, Math.max(2, w / 72));
+  const detW = p.hDetail ?? 1;
+  let lumH = lum;
+  if (detW !== 1) { lumH = new Float32Array(n); for (let i = 0; i < n; i++) lumH[i] = clamp01(lum[i] + (lum[i] - midBlur[i]) * (detW - 1) * 1.6); }
   let height = new Float32Array(n);
   for (let i = 0; i < n; i++) {
-    let v = (lum[i] - shade[i]) * 0.65 + lum[i] * 0.35;
+    let v = (lumH[i] - shade[i]) * 0.65 + lumH[i] * 0.35;
     v = 0.5 + (v - 0.5) * p.hContrast + p.hBrightness;
     height[i] = p.hInvert ? 1 - clamp01(v) : clamp01(v);
   }
@@ -136,7 +166,7 @@ function generateMaps(sourceImg, p) {
      Por defecto todo opaco (umbral 0); súbelo para recortar fondos oscuros. */
   const opacity = new Float32Array(n), oT = p.oThresh ?? 0, oS = Math.max(0.01, p.oSoft ?? 0.1);
   for (let i = 0; i < n; i++) { const v = oT === 0 ? 1 : clamp01((lum[i] - oT) / oS); opacity[i] = p.oInvert ? 1 - v : v; }
-  return {
+  const maps = {
     basecolor: baseColor,
     normal,
     height: floatToImageData(height, w, h),
@@ -147,4 +177,8 @@ function generateMaps(sourceImg, p) {
     ao: floatToImageData(ao, w, h),
     opacity: floatToImageData(blurGaussianWrap(opacity, w, h, 0.7), w, h),
   };
+  /* Datos flotantes para exportar a 16 bits (Blender: Displacement y
+     Normal sin bandas). No son ImageData; la UI los ignora. */
+  maps._float16 = { width: w, height: h, normal: nRGB, displacement: disp };
+  return maps;
 }
