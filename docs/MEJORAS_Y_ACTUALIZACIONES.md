@@ -5,19 +5,19 @@
 | Rama | Estado |
 |---|---|
 | `main` | En el merge del PR #2. Quedará al día al fusionar el PR #3. |
-| `arena/936ee125-pixplant` (esta) | PR #3 abierto hacia `main`: ingeniería inversa, exportación macOS 13, diseño NEO y esta actualización de librerías. |
+| `arena/936ee125-pixplant` (esta) | PR #3 abierto hacia `main`: ingeniería inversa, exportación macOS Monterey, diseño NEO y esta actualización de librerías. |
 | `arena/6ab1ca7b-pixplant`, `arena/645509a5-pixplant` | Fusionadas (PR #1 y #2) y eliminadas del remoto. Nada pendiente en ellas. |
 
 **Conclusión:** no hay ramas “mejorables” sueltas; la única acción de ramas
 pendiente es fusionar el PR #3 para que `main` reciba todo.
 
-## 2 · Librerías actualizadas en esta pasada (v1.3.0)
+## 2 · Librerías actualizadas en esta pasada (v1.4.0)
 
 | Pieza | Antes | Ahora | Notas |
 |---|---|---|---|
-| Electron | 31.7.7 | **45.1.0** | Exige macOS 13+ desde Electron 44 — coincide con nuestro destino `minimumSystemVersion: 13.0`. Sin módulos nativos ni APIs retiradas en uso (preload solo usa `ipcRenderer`; no usamos clipboard de renderer). |
+| Electron | 31.7.7 | **43.8.4** | Última línea compatible con **macOS 12 Monterey** (Electron 44+ exige macOS 13). Nuestro destino es `minimumSystemVersion: 12.0`. Sin módulos nativos ni APIs retiradas en uso (preload solo usa `ipcRenderer`). Se probó 45.1.0 y se descartó solo por el requisito de macOS 13. |
 | electron-builder | 24.13.3 | **26.18.0** | Mejor soporte de runners actuales (Ubuntu reciente, macOS 15). |
-| Node en CI | 20 | **22** | Electron 45 requiere Node ≥ 22.12 para su tooling. |
+| Node en CI | 20 | **22** | Electron 43 requiere Node ≥ 22.12 para su tooling. |
 | actions/checkout | v4 | **v7** | Última mayor. |
 | actions/setup-node | v4 | **v7** | Última mayor. |
 | actions/upload-artifact | v4 | **v7** | Última mayor. |

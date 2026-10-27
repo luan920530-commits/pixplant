@@ -32,7 +32,7 @@ código para las tres plataformas):
 
 | Plataforma | Instalador |
 |---|---|
-| **Mac 13 / macOS 13 Ventura (Intel x64)** | `.dmg` / `.zip` — *TexPlant-Studio-…-macos13-intel* (icono Pix) |
+| **Mac Monterey / macOS 12+ (Intel x64)** | `.dmg` / `.zip` — *TexPlant-Studio-…-macos-monterey-intel* (icono Pix) |
 | **Windows (x64)** | `.exe` instalador NSIS + portable |
 | **Linux (x64)** | `.AppImage` + `.deb` |
 
@@ -40,7 +40,7 @@ código para las tres plataformas):
 un tag `v*`) se compila cada instalador en una máquina real de su sistema
 (`.github/workflows/build-native.yml`: se compila en `macos-15-intel`
 —la etiqueta `macos-13` fue retirada por GitHub— pero el paquete declara
-`minimumSystemVersion: 13.0`, es decir, destino **macOS 13 Ventura**;
+`minimumSystemVersion: 12.0`, es decir, destino **macOS 12 Monterey** (también Ventura y posteriores);
 `windows-latest`,
 `ubuntu-latest`) y quedan como artefactos descargables.
 
@@ -49,12 +49,12 @@ un tag `v*`) se compila cada instalador en una máquina real de su sistema
 ```bash
 npm ci
 npm run desktop        # abre la app nativa sin empaquetar
-npm run dist:mac13     # macOS 13 Ventura Intel (.dmg/.zip, icono Pix)
+npm run dist:mac-monterey  # macOS 12 Monterey Intel (.dmg/.zip, icono Pix)
 npm run dist:win       # Windows      (hacerlo en Windows)
 npm run dist:linux     # Linux        (.AppImage / .deb)
 ```
 
-La versión nativa (v1.3.0: **Electron 45** + electron-builder 26) añade menú **Archivo → Abrir imagen… (Ctrl/Cmd+O)**
+La versión nativa (v1.4.0: **Electron 43** —última línea compatible con Monterey— + electron-builder 26) añade menú **Archivo → Abrir imagen… (Ctrl/Cmd+O)**
 y funciona sin servidor ni internet. Plan de mejoras y auditoría de
 ramas/librerías: [docs/MEJORAS_Y_ACTUALIZACIONES.md](docs/MEJORAS_Y_ACTUALIZACIONES.md).
 
