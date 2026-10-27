@@ -54,8 +54,9 @@ npm run dist:win       # Windows      (hacerlo en Windows)
 npm run dist:linux     # Linux        (.AppImage / .deb)
 ```
 
-La versión nativa añade menú **Archivo → Abrir imagen… (Ctrl/Cmd+O)**
-y funciona sin servidor ni internet.
+La versión nativa (v1.3.0: **Electron 45** + electron-builder 26) añade menú **Archivo → Abrir imagen… (Ctrl/Cmd+O)**
+y funciona sin servidor ni internet. Plan de mejoras y auditoría de
+ramas/librerías: [docs/MEJORAS_Y_ACTUALIZACIONES.md](docs/MEJORAS_Y_ACTUALIZACIONES.md).
 
 ## 🚀 Versión web / PWA
 
