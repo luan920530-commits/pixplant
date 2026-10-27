@@ -99,7 +99,8 @@ function buildStrip() {
       card.className = 'map-card'; card.dataset.key = key; card.title = `${label} — ${cs}`;
       const thumb = document.createElement('canvas'); thumb.width = thumb.height = 128; thumb.dataset.thumb = key;
       const span = document.createElement('span'); span.innerHTML = `<b>${label}</b><br><small>${cs}</small>`;
-      const btn = document.createElement('button'); btn.type = 'button'; btn.textContent = '⬇ PNG';
+      const btn = document.createElement('button'); btn.type = 'button';
+      btn.innerHTML = '<svg class="icon" style="width:13px;height:13px"><use href="#i-download"/></svg> PNG';
       btn.addEventListener('click', async e => {
         e.stopPropagation(); e.preventDefault();
         download(await canvasBlob(mapCanvases[key]), `${materialName()}_${suffix}.png`);
@@ -207,7 +208,22 @@ document.querySelectorAll('.controls input, .controls select').forEach(el => el.
 $('workSize').addEventListener('change', () => { if (state.lastCanvas) setSource(state.lastCanvas); });
 $('fileInput').addEventListener('change', e => loadFile(e.target.files[0]));
 const _setSource = setSource; setSource = c => { state.lastCanvas = c; _setSource(c); };
-$('sampleBtn').onclick = () => $('sampleMenu').hidden = !$('sampleMenu').hidden;
+$('sampleBtn').addEventListener('click', e => {
+  e.stopPropagation();
+  const menu = $('sampleMenu'), open = menu.hidden;
+  menu.hidden = !open;
+  $('sampleBtn').setAttribute('aria-expanded', String(open));
+  $('sampleBtn').querySelector('.icon-chev').style.transform = open ? 'rotate(180deg)' : '';
+});
+document.addEventListener('click', e => {
+  if (!$('sampleMenu').hidden && !e.target.closest('.menu-wrap')) {
+    $('sampleMenu').hidden = true; $('sampleBtn').setAttribute('aria-expanded', 'false');
+    $('sampleBtn').querySelector('.icon-chev').style.transform = '';
+  }
+});
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') { $('sampleMenu').hidden = true; $('sampleBtn').setAttribute('aria-expanded', 'false'); }
+});
 document.querySelectorAll('#sampleMenu button').forEach(b => b.onclick = () => { $('sampleMenu').hidden = true; makeSample(b.dataset.sample); });
 document.querySelectorAll('[data-preset]').forEach(b => b.onclick = () => applyPreset(b.dataset.preset));
 document.querySelectorAll('.tab').forEach(t => t.onclick = () => setView(t.dataset.view));

@@ -27,6 +27,7 @@
       "index.html",
       "manifest.webmanifest",
       "css/**/*",
+      "assets/**/*",
       "js/**/*",
       "desktop/**/*",
       "package.json"
